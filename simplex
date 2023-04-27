@@ -1,0 +1,49 @@
+clc
+clear all
+c=[2 1 0 0 0 0]
+a=[1,2,1,0,0;1,1,0,1,0;1,-1,0,0,1]
+b=[10;6;2]
+a=[a,b]
+% Var={'x1','x2','s1','s2','sol'}
+bv=[3,4,5]
+zjcj=c(bv)*a-c
+simplex_table=[a;zjcj]
+array2table(simplex_table,'VariableNames',{'x1','x2','s1','s2','s3','sol'})
+RUN= true;
+while RUN
+    if any(zjcj(1:end-1)<0)
+        fprintf('sol is not optimal')
+ zc=zjcj(1:end-1);
+        [enter_val, pvt_col]=min(zc)
+        if all (a(:,pvt_col)<=0)
+           fprintf('lpp is unbounded')
+        else
+            sol=a(:,end);
+        col=a(:,pvt_col);
+        for i=1:size(a,1)
+            if col(i)>0
+                ratio(i)=sol (i)./col(i);
+            else 
+                ratio(i) = inf;
+            end
+        end
+        [leaving_value,pvt_row,]=min(ratio);
+        end
+        bv(pvt_row)=pvt_col;
+        pvt_key=a(pvt_row,pvt_col);
+        a(pvt_row,:)=a(pvt_row,:)./pvt_key;
+        %row operations
+        for i=1:size(a,1)
+            if i~=pvt_row
+                a(i,:)=a(i,:)-a(i,pvt_col)*a(pvt_row,:);
+            end
+        end
+        zjcj=c(bv)*a-c;
+        new_table=[a;zjcj];
+        array2table(new_table,'VariableNames',{'x1','x2','s1','s2','s3','sol',})
+    else
+        RUN=false;
+    end
+end
+
+fprintf('the optimal sol is %f \n',zjcj(end))
